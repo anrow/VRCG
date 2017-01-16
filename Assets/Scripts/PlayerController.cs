@@ -5,7 +5,7 @@ public class PlayerController : MonoBehaviour {
 
     private const float cameraSpeed = 0.5f;
     private const float viewDistance = 10.0f;
-    private const int maxColor = 2;
+
     public GameObject cameraRig;
     public GameObject handLeft;
     public GameObject sphere;
@@ -13,12 +13,6 @@ public class PlayerController : MonoBehaviour {
     public Transform sphereTrans;
     public Transform[ ] linePoints;
 
-    private int[ ] colors = new int[ maxColor ]; 
-    private Color[ ] color = { Color.red, Color.green };
-    private enum COLOR {
-        red,
-        green
-    }
     public NavMeshAgent navMeshAgent;
     public NavMeshHit navMeshHit;
    
@@ -55,6 +49,11 @@ public class PlayerController : MonoBehaviour {
         Camera.main.transform.rotation = Quaternion.Slerp( Camera.main.transform.rotation, target, Time.time ); 
 
         //----------------------------//	   
+        //--------VR入力--------------//
+        SteamVR_TrackedObject trackedObject = GetComponent<SteamVR_TrackedObject>();
+        var device = SteamVR_Controller.Input((int) trackedObject.index);
+
+        //---------------------------//
 
         RaycastHit hitInfo;
         Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
@@ -62,29 +61,28 @@ public class PlayerController : MonoBehaviour {
 
 	    if ( Physics.Raycast( ray, out hitInfo ) ) {
             
-            //navMeshAgent.SetDestination( hitInfo.point );
-            
             sphereTrans.position = hitInfo.point;
 
             Debug.Log( hitInfo.normal );
-            
-         
-            for( int i = 0; i < colors.Length; ++i ) {
-                if( hitInfo.normal.y < 0.1 ) {
-                    i = colors[ (int)COLOR.red ];
-                } else {
-                    i = colors[ (int)COLOR.green ];
-                    lineRenderer.material.color = Color.green;
-                    if ( Input.GetMouseButtonDown( 0 ) ) {
-                        cameraRig.transform.position = hitInfo.point + offset.normalized * viewDistance;
-                    }   
-                }
-                sphere.GetComponent<Renderer>( ).material.color = color[ i ];
-                lineRenderer.material.color = color[ i ];
-                lineRenderer.SetPosition( i, linePoints[ i ].position );
-                lineRenderer.SetWidth( 0.1f, 0.1f );
-                Debug.DrawLine( linePoints[ (int)COLOR.red ].position, linePoints[ (int)COLOR.green ].position, color[ i ] );
+  
+            if( hitInfo.normal.y < 0.1 ) {
+               
+                lineRenderer.material.color = Color.red;
+                sphere.GetComponent<Renderer>( ).material.color = Color.red;
+                Debug.DrawLine( linePoints[ 0 ].position, linePoints[ 1 ].position, Color.red );
+            } else {
+                
+                lineRenderer.material.color = Color.green;
+                sphere.GetComponent<Renderer>( ).material.color = Color.green;
+                Debug.DrawLine( linePoints[ 0 ].position, linePoints[ 1 ].position, Color.green );
+                if ( Input.GetMouseButtonDown( 0 ) || device.GetPressDown( SteamVR_Controller.ButtonMask.Trigger ) ) {
+                    cameraRig.transform.position = hitInfo.point + offset.normalized * viewDistance;
+                    Debug.Log( "トリガーを深く引いた" );
+                }   
             }
+            lineRenderer.SetPosition( 0, linePoints[ 0 ].position );
+            lineRenderer.SetPosition( 1, linePoints[ 1 ].position );
+            lineRenderer.SetWidth( 0.1f, 0.1f ); 
         }    
 	}
 }
