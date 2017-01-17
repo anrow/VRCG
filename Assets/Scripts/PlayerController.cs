@@ -11,24 +11,19 @@ public class PlayerController : MonoBehaviour {
     public GameObject sphere;
 
     public Transform sphereTrans;
-    public Transform[ ] linePoints;
-
-    public NavMeshAgent navMeshAgent;
-    public NavMeshHit navMeshHit;
-   
+    public Transform[ ] linePoints;   
     private LineRenderer lineRenderer;
 
     private Vector3 offset;
     private Quaternion target;
-    private Vector3 height = new Vector3( 0, 5000, -1000 );
+    private Vector3 height = new Vector3( 0, 5000, 0 );
 
     private float x;
     private float y;
-	// Use this for initialization
+	
 	void Start () {
 	   
         sphereTrans = GameObject.Find( "Sphere" ).transform;
-        navMeshAgent = gameObject.GetComponent<NavMeshAgent>( );
 
         x = Input.GetAxis( "Vertical" );
         y = Input.GetAxis( "Horizontal" );
@@ -37,7 +32,6 @@ public class PlayerController : MonoBehaviour {
        
 	}
 	
-	// Update is called once per frame
 	void Update () {
 
         lineRenderer = gameObject.GetComponent<LineRenderer>( );
@@ -56,7 +50,8 @@ public class PlayerController : MonoBehaviour {
         //---------------------------//
 
         RaycastHit hitInfo;
-        Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+        //Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+        Ray ray = new Ray( handLeft.transform.position, handLeft.transform.forward );
         offset = sphereTrans.position - Camera.main.transform.position + height;
 
 	    if ( Physics.Raycast( ray, out hitInfo ) ) {
@@ -65,7 +60,7 @@ public class PlayerController : MonoBehaviour {
 
             Debug.Log( hitInfo.normal );
   
-            if( hitInfo.normal.y < 0.1 ) {
+            if( hitInfo.normal.y < 0.0166 ) {
                
                 lineRenderer.material.color = Color.red;
                 sphere.GetComponent<Renderer>( ).material.color = Color.red;
@@ -82,8 +77,8 @@ public class PlayerController : MonoBehaviour {
             }
             lineRenderer.SetPosition( 0, linePoints[ 0 ].position );
             lineRenderer.SetPosition( 1, linePoints[ 1 ].position );
-            lineRenderer.SetWidth( 0.1f, 0.1f ); 
-        }    
+            lineRenderer.SetWidth( 0.01f, 0.01f ); 
+        }   
 	}
 }
 
