@@ -2,7 +2,8 @@
 using System.Collections;
 
 public class PlayerController : MonoBehaviour {
-
+    
+        
     private const float cameraSpeed = 0.5f;
     private const float viewDistance = 10.0f;
 
@@ -16,11 +17,13 @@ public class PlayerController : MonoBehaviour {
 
     private Vector3 offset;
     private Quaternion target;
-    private Vector3 height = new Vector3( 0, 5000, 0 );
+    private Vector3 height = new Vector3( 0, 3000, 0 );
 
     private float x;
     private float y;
 	
+    public GameObject vrCamera;
+    public GameObject cube;
 	void Start () {
 	   
         sphereTrans = GameObject.Find( "Sphere" ).transform;
@@ -29,10 +32,19 @@ public class PlayerController : MonoBehaviour {
         y = Input.GetAxis( "Horizontal" );
 
         lineRenderer = gameObject.AddComponent<LineRenderer>( );
-       
+
+    
 	}
 	
 	void Update () {
+
+        //----------------------------//	   
+        //--------VR入力--------------//
+        //SteamVR_TrackedObject trackedObject = vrCamera.GetComponent<SteamVR_TrackedObject>();
+        //var device = SteamVR_Controller.Input((int) trackedObject.index);
+
+        //---------------------------//
+       
 
         lineRenderer = gameObject.GetComponent<LineRenderer>( );
 
@@ -42,16 +54,11 @@ public class PlayerController : MonoBehaviour {
         target = Quaternion.Euler(  -x * cameraSpeed, y * cameraSpeed, 0 );
         Camera.main.transform.rotation = Quaternion.Slerp( Camera.main.transform.rotation, target, Time.time ); 
 
-        //----------------------------//	   
-        //--------VR入力--------------//
-        SteamVR_TrackedObject trackedObject = GetComponent<SteamVR_TrackedObject>();
-        var device = SteamVR_Controller.Input((int) trackedObject.index);
-
-        //---------------------------//
+     
 
         RaycastHit hitInfo;
-        //Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
-        Ray ray = new Ray( handLeft.transform.position, handLeft.transform.forward );
+        Ray ray = Camera.main.ScreenPointToRay( Input.mousePosition );
+        //Ray ray = new Ray( handLeft.transform.position, handLeft.transform.forward );
         offset = sphereTrans.position - Camera.main.transform.position + height;
 
 	    if ( Physics.Raycast( ray, out hitInfo ) ) {
@@ -70,14 +77,15 @@ public class PlayerController : MonoBehaviour {
                 lineRenderer.material.color = Color.green;
                 sphere.GetComponent<Renderer>( ).material.color = Color.green;
                 Debug.DrawLine( linePoints[ 0 ].position, linePoints[ 1 ].position, Color.green );
-                if ( Input.GetMouseButtonDown( 0 ) || device.GetPressDown( SteamVR_Controller.ButtonMask.Trigger ) ) {
+                if ( Input.GetMouseButtonDown( 0 ) /*|| device.GetPressDown( SteamVR_Controller.ButtonMask.Trigger )*/ ) {
                     cameraRig.transform.position = hitInfo.point + offset.normalized * viewDistance;
                     Debug.Log( "トリガーを深く引いた" );
                 }   
             }
-            lineRenderer.SetPosition( 0, linePoints[ 0 ].position );
-            lineRenderer.SetPosition( 1, linePoints[ 1 ].position );
-            lineRenderer.SetWidth( 0.01f, 0.01f ); 
+            lineRenderer.SetPosition( 0, cube.transform.position );
+            lineRenderer.SetPosition( 1, sphere.transform.position );
+            lineRenderer.SetWidth( 0.3f, 0.1f ); 
+            
         }   
 	}
 }
